@@ -1,32 +1,29 @@
 # Copilot
-This plugin is a fork from the original [copilot](https://github.com/totalschaden/copilot), updated to work on PoE2.
+This plugin is a fork of the original copilot, [https://github.com/Curvu/Copilot ]
 
-Note that even though the plugin is a fork from the original, it has been rewritten and the handling of logic has been changed.
-Also, there are features that I neither implemented nor plan to implement.
+Credits: This project is based on Copilot, created by totalschaden, and also uses parts of the code from FollowLad.
 
-It used some of the base code from the [FollowLad](https://github.com/AlphaCaster/FollowLad).
+Even though this is a fork, the code has been heavily rewritten, and the logic handling has changed. Some features from the original version have not been implemented and are not planned.
 
-## Features
-- [x] Follow player
-- [x] Go through portals
-- [x] Use blink to catch up (if the target is getting far away)
-- [x] Close UIs (like chests, crafting tables, etc) if accidentally clicked
-- [x] Auto respawn (will try to respawn, can't if someone else is on the map though)
-- [ ] Pick up items
-- [ ] Use skills
+🛠️ Features
+✅ Follow player
+✅ Go through portals
+✅ Use Blink to catch up if the target gets too far away
+✅ Close UIs (chests, crafting tables, etc.) if clicked accidentally
+✅ Auto respawn (will attempt to respawn but can't if someone else is on the map)
+✅ Auto Potion (New! The bot now uses potions automatically.)
+❌ Pick up items (not implemented)
+❌ Use skills (not implemented)
+⚙️ Settings
+The default settings were made to fit my needs and may not work for you.
+Please, do not open an issue if the plugin does not work for you due to settings.
 
-## Settings
-The default settings were made to fit **MY** needs and may not work for you. So, please, don't open an issue if the plugin is not working for you because of the settings.
-
-## Tips
-- **DO NOT** use the checkpoints
-- When the target goes through a portal, the target should wait, near, so when the bot loads he can see the target in his screen
-- If you are going to fast it is your fault the bot is not working, not the plugin's fault
-- It's nice to have the bot zoomed out with, [WheresMyZoomAt](https://github.com/doubleespressobro/WheresMyZoomAt-PoE2) plugin
-- I recommend using the Waypoint and Map Device near each other
-
-## Known bugs
-- Might bug in "ARENA"
-
-## Donations
-[![Donate with PayPal](./assets/donate.png)](https://www.paypal.com/donate/?hosted_button_id=NX4PVU9B2YFDU)
+💡 Tips
+DO NOT use checkpoints
+When the target goes through a portal, they should wait nearby so that the bot can detect them once the map loads
+If you're moving too fast and the bot is not keeping up, it's your fault, not the plugin's
+I recommend using the WheresMyZoomAt plugin to improve visibility
+It's best to keep the Waypoint and Map Device close to each other
+🐞 Known Bugs
+Might bug in ARENA
+💰 Donations

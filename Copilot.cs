@@ -22,6 +22,7 @@ namespace Copilot
         private Entity _followTarget;
         private DateTime _nextAllowedActionTime = DateTime.Now; // Cooldown timer
         private DateTime _nextAllowedBlinkTime = DateTime.Now;
+        private DateTime _nextAllowedPotionUse = DateTime.Now;
         private Vector3 lastTargetPosition = Vector3.Zero;
 
         public override bool Initialise()
@@ -55,6 +56,7 @@ namespace Copilot
             catch (Exception) { /* Handle exceptions silently */ }
             base.DrawSettings();
         }
+
 
         public override void Render()
         {
@@ -104,7 +106,7 @@ namespace Copilot
                 }
 
                 // TODO: handle picking up items??
-
+                UsePotions();
                 FollowTarget();
             } 
             catch (Exception) { /* Handle exceptions silently */ }
@@ -116,6 +118,48 @@ namespace Copilot
             _followTarget = null;
             base.AreaChange(area);
         }
+
+        private void UsePotions()
+            {
+                if (!Settings.Potions.EnablePotions.Value || DateTime.Now < _nextAllowedPotionUse)
+                    return;
+
+                var playerLife = GameController.Game.IngameState.Data.LocalPlayer.GetComponent<Life>();
+                if (playerLife == null) return;
+                
+                double currentHP = playerLife.CurHP;
+                double maxHP = playerLife.MaxHP;
+                double hpPercent = (currentHP / maxHP) * 100;
+
+                double currentMana = playerLife.CurMana;
+                double maxMana = playerLife.MaxMana;
+                double manaPercent = (currentMana / maxMana) * 100;
+
+                double currentES = playerLife.CurES;
+                double maxES = playerLife.MaxES;
+                double esPercent = (maxES > 0) ? (currentES / maxES) * 100 : 100;
+                
+                if (Settings.Potions.HealthPotion.UseHealthPotion.Value && hpPercent <= Settings.Potions.HealthPotion.MinHealthPotion.Value)
+                {
+                    Keyboard.KeyDown(Settings.Potions.HealthPotion.HealthPotionKey.Value);
+                    Keyboard.KeyUp(Settings.Potions.HealthPotion.HealthPotionKey.Value);
+                }
+                
+                if (Settings.Potions.ESPotion.UseEnergyShieldPotion.Value && esPercent <= Settings.Potions.ESPotion.MinESPotion.Value)
+                {
+                    Keyboard.KeyDown(Settings.Potions.ESPotion.ESPotionKey.Value);
+                    Keyboard.KeyUp(Settings.Potions.ESPotion.ESPotionKey.Value);
+                }
+                
+                
+                if (Settings.Potions.ManaPotion.UseManaPotion.Value && manaPercent <= Settings.Potions.ManaPotion.MinManaPotion.Value)
+                {
+                    Keyboard.KeyDown(Settings.Potions.ManaPotion.ManaPotionKey.Value);
+                    Keyboard.KeyUp(Settings.Potions.ManaPotion.ManaPotionKey.Value);
+                }
+
+                _nextAllowedPotionUse = DateTime.Now.AddMilliseconds(500); 
+            }
 
         private void FollowTarget()
         {
@@ -191,12 +235,12 @@ namespace Copilot
                     _nextAllowedActionTime = DateTime.Now.AddMilliseconds(1000);
                     return;
                 }
-                else if (Settings.UseBlink.Value && DateTime.Now > _nextAllowedBlinkTime && distanceToTarget > Settings.BlinkRange.Value)
+                else if (Settings.Blink.UseBlink.Value && DateTime.Now > _nextAllowedBlinkTime && distanceToTarget > Settings.Blink.BlinkRange.Value)
                 {
                     MoveToward(targetPos);
                     Keyboard.KeyDown(Keys.Space);
                     Keyboard.KeyUp(Keys.Space);
-                    _nextAllowedBlinkTime = DateTime.Now.AddMilliseconds(Settings.BlinkCooldown.Value);
+                    _nextAllowedBlinkTime = DateTime.Now.AddMilliseconds(Settings.Blink.BlinkCooldown.Value);
                 }
                 else
                 {

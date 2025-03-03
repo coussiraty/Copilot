@@ -12,7 +12,7 @@ Even though this is a fork, the code has been heavily rewritten, and the logic h
 - Close UIs (chests, crafting tables, etc.) if clicked accidentally
 - Auto respawn (will attempt to respawn but can't if someone else is on the map)
 - Auto Potion (New! The bot now uses potions automatically.)
-- Auto skils (In progress)
+- Auto skils (In progress.is working for now, but is to simple)
 
 
 

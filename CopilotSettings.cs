@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using ExileCore2.Shared.Attributes;
+using ExileCore2.Shared.Enums;
 using ExileCore2.Shared.Interfaces;
 using ExileCore2.Shared.Nodes;
 
@@ -28,11 +30,14 @@ namespace Copilot
         public RangeNode<int> ActionCooldown { get; set; } = new RangeNode<int>(100, 50, 20000);
 
         [Menu("Blink Settings")]
-
         public BlinkSettings Blink { get; set; } = new BlinkSettings();
+       
         [Menu("Potions Settings")]
-
         public PotionSettings Potions { get; set; } = new PotionSettings();
+        
+        [Menu("Attack Assist Settings")]
+        public AttackAssistSettings AttackAssist { get; set; } = new AttackAssistSettings();
+
     }
 
     [Submenu(CollapsedByDefault = true)]
@@ -74,7 +79,7 @@ namespace Copilot
         [Menu("Health Potion", "Cooldown (ms)")]
         public RangeNode<int> HealthPotionCooldown { get; set; } = new RangeNode<int>(500, 100, 5000);
 
-        private DateTime _nextAllowedHealthPotionUse { get; set; } = DateTime.Now;
+        public DateTime _nextAllowedHealthPotionUse { get; set; } = DateTime.Now;
     }
 
     [Submenu(CollapsedByDefault = true)]
@@ -92,7 +97,7 @@ namespace Copilot
         [Menu("Mana Potion", "Cooldown (ms)")]
         public RangeNode<int> ManaPotionCooldown { get; set; } = new RangeNode<int>(500, 100, 5000);
 
-        private DateTime _nextAllowedManaPotionUse { get; set; } = DateTime.Now;
+        public DateTime _nextAllowedManaPotionUse { get; set; } = DateTime.Now;
     }
 
     [Submenu(CollapsedByDefault = true)]
@@ -110,6 +115,35 @@ namespace Copilot
         [Menu("Energy Shield Potion", "Cooldown (ms)")]
         public RangeNode<int> ESPotionCooldown { get; set; } = new RangeNode<int>(500, 100, 5000);
 
-        private DateTime _nextAllowedESPotionUse { get; set; } = DateTime.Now;
+        public DateTime _nextAllowedESPotionUse { get; set; } = DateTime.Now;
     }
+
+    [Submenu(CollapsedByDefault = true)]
+    public class AttackAssistSettings
+    {
+        [Menu("Enable Attack Assist", "Enable or disable attack assist feature")]
+        public ToggleNode EnableAttackAssist { get; set; } = new ToggleNode(false);
+
+        [Menu("Check mob distance", "Maximum distance to detect mobs")]
+        public RangeNode<int> MobDistanceThreshold { get; set; } = new RangeNode<int>(1000, 1, 10000);
+
+        [Menu("Key for skills", "Hotkey for skill usage")]
+        public HotkeyNode AssignedSkillKey { get; set; } = new HotkeyNode(Keys.D3);
+        
+        [Menu("Skill Cooldown (ms)", "Time in milliseconds before reusing the skill")]
+        public RangeNode<int> SkillCooldown { get; set; } = new RangeNode<int>(1000, 100, 5000); 
+
+        [Menu("Target White Monsters", "Enable to attack white (normal) monsters")]
+        public ToggleNode TargetWhite { get; set; } = new ToggleNode(true);
+
+        [Menu("Target Magic Monsters", "Enable to attack magic monsters")]
+        public ToggleNode TargetMagic { get; set; } = new ToggleNode(true);
+
+        [Menu("Target Rare Monsters", "Enable to attack rare monsters")]
+        public ToggleNode TargetRare { get; set; } = new ToggleNode(true);
+
+        [Menu("Target Unique Monsters", "Enable to attack unique monsters")]
+        public ToggleNode TargetUnique { get; set; } = new ToggleNode(true);
+    }
+
 }

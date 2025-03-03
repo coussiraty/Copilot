@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 using System.Numerics;
@@ -23,6 +24,8 @@ namespace Copilot
         private DateTime _nextAllowedActionTime = DateTime.Now; // Cooldown timer
         private DateTime _nextAllowedBlinkTime = DateTime.Now;
         private DateTime _nextAllowedPotionUse = DateTime.Now;
+        private DateTime _nextSkillUsageTime = DateTime.Now;
+
         private Vector3 lastTargetPosition = Vector3.Zero;
 
         public override bool Initialise()
@@ -77,11 +80,18 @@ namespace Copilot
                 var rightPanel = GameController.IngameState.IngameUi.OpenRightPanel;
                 var worldMap = GameController.IngameState.IngameUi.WorldMap;
                 var npcDialog = GameController.IngameState.IngameUi.NpcDialog;
+                var treePanel = GameController.IngameState.IngameUi.TreePanel;
+                var atlasTreePanel = GameController.IngameState.IngameUi.AtlasTreePanel;
+
+
                 if ((checkpoint?.IsVisible != null && (bool)checkpoint?.IsVisible) ||
                     (leftPanel?.IsVisible != null && (bool)leftPanel?.IsVisible) ||
                     (rightPanel?.IsVisible != null && (bool)rightPanel?.IsVisible) ||
                     (worldMap?.IsVisible != null && (bool)worldMap?.IsVisible) ||
                     (npcDialog?.IsVisible != null && (bool)npcDialog?.IsVisible) ||
+                    (treePanel?.IsVisible != null && (bool)treePanel?.IsVisible) ||
+                    (atlasTreePanel?.IsVisible != null && (bool)atlasTreePanel?.IsVisible) ||
+
                     (market?.IsVisible != null && (bool)market?.IsVisible))
                 {
                     Keyboard.KeyDown(Keys.Space);
@@ -108,6 +118,7 @@ namespace Copilot
                 // TODO: handle picking up items??
                 UsePotions();
                 FollowTarget();
+                UseAttackSkill();
             } 
             catch (Exception) { /* Handle exceptions silently */ }
         }
@@ -120,46 +131,136 @@ namespace Copilot
         }
 
         private void UsePotions()
+        {
+            if (!Settings.Potions.EnablePotions.Value)
+                return;
+
+            var now = DateTime.Now;
+            var playerLife = GameController.Game.IngameState.Data.LocalPlayer.GetComponent<Life>();
+            if (playerLife == null) return;
+
+            double currentHP = playerLife.CurHP;
+            double maxHP = playerLife.MaxHP;
+            double hpPercent = (currentHP / maxHP) * 100;
+
+            double currentMana = playerLife.CurMana;
+            double maxMana = playerLife.MaxMana;
+            double manaPercent = (currentMana / maxMana) * 100;
+
+            double currentES = playerLife.CurES;
+            double maxES = playerLife.MaxES;
+            double esPercent = (maxES > 0) ? (currentES / maxES) * 100 : 100;
+
+            if (Settings.Potions.HealthPotion.UseHealthPotion.Value &&
+                hpPercent <= Settings.Potions.HealthPotion.MinHealthPotion.Value &&
+                now >= Settings.Potions.HealthPotion._nextAllowedHealthPotionUse)
             {
-                if (!Settings.Potions.EnablePotions.Value || DateTime.Now < _nextAllowedPotionUse)
-                    return;
+                Keyboard.KeyDown(Settings.Potions.HealthPotion.HealthPotionKey.Value);
+                Thread.Sleep(10);
+                Keyboard.KeyUp(Settings.Potions.HealthPotion.HealthPotionKey.Value);
 
-                var playerLife = GameController.Game.IngameState.Data.LocalPlayer.GetComponent<Life>();
-                if (playerLife == null) return;
-                
-                double currentHP = playerLife.CurHP;
-                double maxHP = playerLife.MaxHP;
-                double hpPercent = (currentHP / maxHP) * 100;
-
-                double currentMana = playerLife.CurMana;
-                double maxMana = playerLife.MaxMana;
-                double manaPercent = (currentMana / maxMana) * 100;
-
-                double currentES = playerLife.CurES;
-                double maxES = playerLife.MaxES;
-                double esPercent = (maxES > 0) ? (currentES / maxES) * 100 : 100;
-                
-                if (Settings.Potions.HealthPotion.UseHealthPotion.Value && hpPercent <= Settings.Potions.HealthPotion.MinHealthPotion.Value)
-                {
-                    Keyboard.KeyDown(Settings.Potions.HealthPotion.HealthPotionKey.Value);
-                    Keyboard.KeyUp(Settings.Potions.HealthPotion.HealthPotionKey.Value);
-                }
-                
-                if (Settings.Potions.ESPotion.UseEnergyShieldPotion.Value && esPercent <= Settings.Potions.ESPotion.MinESPotion.Value)
-                {
-                    Keyboard.KeyDown(Settings.Potions.ESPotion.ESPotionKey.Value);
-                    Keyboard.KeyUp(Settings.Potions.ESPotion.ESPotionKey.Value);
-                }
-                
-                
-                if (Settings.Potions.ManaPotion.UseManaPotion.Value && manaPercent <= Settings.Potions.ManaPotion.MinManaPotion.Value)
-                {
-                    Keyboard.KeyDown(Settings.Potions.ManaPotion.ManaPotionKey.Value);
-                    Keyboard.KeyUp(Settings.Potions.ManaPotion.ManaPotionKey.Value);
-                }
-
-                _nextAllowedPotionUse = DateTime.Now.AddMilliseconds(500); 
+                Settings.Potions.HealthPotion._nextAllowedHealthPotionUse = now.AddMilliseconds(Settings.Potions.HealthPotion.HealthPotionCooldown.Value);
             }
+
+            if (Settings.Potions.ESPotion.UseEnergyShieldPotion.Value &&
+                esPercent <= Settings.Potions.ESPotion.MinESPotion.Value &&
+                now >= Settings.Potions.ESPotion._nextAllowedESPotionUse)
+            {
+                Keyboard.KeyDown(Settings.Potions.ESPotion.ESPotionKey.Value);
+                Thread.Sleep(10);
+                Keyboard.KeyUp(Settings.Potions.ESPotion.ESPotionKey.Value);
+
+                Settings.Potions.ESPotion._nextAllowedESPotionUse = now.AddMilliseconds(Settings.Potions.ESPotion.ESPotionCooldown.Value);
+            }
+
+            if (Settings.Potions.ManaPotion.UseManaPotion.Value &&
+                manaPercent <= Settings.Potions.ManaPotion.MinManaPotion.Value &&
+                now >= Settings.Potions.ManaPotion._nextAllowedManaPotionUse)
+            {
+                Keyboard.KeyDown(Settings.Potions.ManaPotion.ManaPotionKey.Value);
+                Thread.Sleep(10);
+                Keyboard.KeyUp(Settings.Potions.ManaPotion.ManaPotionKey.Value);
+                
+                Settings.Potions.ManaPotion._nextAllowedManaPotionUse = now.AddMilliseconds(Settings.Potions.ManaPotion.ManaPotionCooldown.Value);
+            }
+        }
+        
+        
+        private bool AreValidMonstersNearby()
+        {
+            // Verifica se a funcionalidade está ativada
+            if (!Settings.AttackAssist.EnableAttackAssist.Value)
+            {
+                DebugWindow.LogMsg("[AttackAssist] Feature is disabled", 2.0f, Color.Yellow);
+                return false;
+            }
+
+            var player = GameController.Player;
+            if (player == null)
+            {
+                DebugWindow.LogError("[AttackAssist] Player entity not found!");
+                return false;
+            }
+
+            var playerPos = player.Pos;
+            float maxDistance = Settings.AttackAssist.MobDistanceThreshold.Value;
+
+            // Obtém as raridades que estão ativadas
+            var selectedRarities = new List<MonsterRarity>();
+            if (Settings.AttackAssist.TargetWhite.Value) selectedRarities.Add(MonsterRarity.White);
+            if (Settings.AttackAssist.TargetMagic.Value) selectedRarities.Add(MonsterRarity.Magic);
+            if (Settings.AttackAssist.TargetRare.Value) selectedRarities.Add(MonsterRarity.Rare);
+            if (Settings.AttackAssist.TargetUnique.Value) selectedRarities.Add(MonsterRarity.Unique);
+
+            if (selectedRarities.Count == 0)
+            {
+                DebugWindow.LogMsg("[AttackAssist] No rarities selected!", 2.0f, Color.Orange);
+                return false;
+            }
+
+            var monsterList = GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster];
+
+            var validMonsters = monsterList
+                .Where(monster =>
+                    monster != null &&
+                    monster.IsValid &&
+                    monster.IsAlive &&
+                    selectedRarities.Contains(monster.Rarity) &&
+                    Vector3.Distance(playerPos, monster.Pos) <= maxDistance)
+                .ToList();
+
+            if (validMonsters.Count > 0)
+            {
+                DebugWindow.LogMsg($"[AttackAssist] Found {validMonsters.Count} valid monsters in range!", 2.0f, Color.Green);
+                return true;
+            }
+            else
+            {
+                DebugWindow.LogMsg("[AttackAssist] No monsters found in range", 2.0f, Color.Red);
+                return false;
+            }
+        }
+
+
+        private void UseAttackSkill()
+        {
+            if (DateTime.Now < _nextSkillUsageTime)
+                return;
+
+            if (!Settings.AttackAssist.EnableAttackAssist.Value)
+                return;
+
+            if (!AreValidMonstersNearby())
+                return;
+
+            DebugWindow.LogMsg("[AttackAssist] Using attack skill!", 2.0f, Color.Cyan);
+
+            Keyboard.KeyDown(Settings.AttackAssist.AssignedSkillKey.Value);
+            Thread.Sleep(50); 
+            Keyboard.KeyUp(Settings.AttackAssist.AssignedSkillKey.Value);
+
+            _nextSkillUsageTime = DateTime.Now.AddMilliseconds(Settings.AttackAssist.SkillCooldown.Value);
+        }
 
         private void FollowTarget()
         {

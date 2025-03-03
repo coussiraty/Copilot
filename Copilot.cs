@@ -188,7 +188,6 @@ namespace Copilot
         
         private bool AreValidMonstersNearby()
         {
-            // Verifica se a funcionalidade está ativada
             if (!Settings.AttackAssist.EnableAttackAssist.Value)
             {
                 DebugWindow.LogMsg("[AttackAssist] Feature is disabled", 2.0f, Color.Yellow);
@@ -205,7 +204,6 @@ namespace Copilot
             var playerPos = player.Pos;
             float maxDistance = Settings.AttackAssist.MobDistanceThreshold.Value;
 
-            // Obtém as raridades que estão ativadas
             var selectedRarities = new List<MonsterRarity>();
             if (Settings.AttackAssist.TargetWhite.Value) selectedRarities.Add(MonsterRarity.White);
             if (Settings.AttackAssist.TargetMagic.Value) selectedRarities.Add(MonsterRarity.Magic);
@@ -225,6 +223,7 @@ namespace Copilot
                     monster != null &&
                     monster.IsValid &&
                     monster.IsAlive &&
+                    !monster.IsHidden &&
                     selectedRarities.Contains(monster.Rarity) &&
                     Vector3.Distance(playerPos, monster.Pos) <= maxDistance)
                 .ToList();

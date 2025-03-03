@@ -223,6 +223,7 @@ namespace Copilot
                     monster != null &&
                     monster.IsValid &&
                     monster.IsAlive &&
+                    !monster.IsTargetable &&
                     !monster.IsHidden &&
                     selectedRarities.Contains(monster.Rarity) &&
                     Vector3.Distance(playerPos, monster.Pos) <= maxDistance)
